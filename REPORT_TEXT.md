@@ -1,328 +1,184 @@
-# COMP5005 Fundamentals of Programming
+# Project Report: Robotic Warehouse Simulation
 
-## Robotic Warehouse Simulation Report
+Name: Ashfaq
+Student Number: 23472297
+Date: 21 May 2026
 
-Student Name: `<your name>`
-Student ID: `<your student id>`
-Semester: 1, 2026
+## Overview
 
----
+This project implements a robotic warehouse simulation for the COMP5005 Fundamentals of Programming assignment. The program models a warehouse as a two-dimensional grid containing walkable floor cells, blocked shelf cells, and four corner home positions. Autonomous robots begin from the warehouse corners, find goods stored at shelf coordinates, travel toward the selected shelf, collect one item, and return the item to their original home corner.
 
-## 1. Overview
+The implementation addresses the main requirements in the v2 assignment brief. Robots and goods are represented as objects, shelves are treated as obstacles, robots are allowed to overlap, goods can be generated automatically, multiple goods may exist at the same shelf location, and the program supports both interactive and batch execution. The simulation also provides a Matplotlib display using subplots: one subplot for the warehouse map and one subplot for delivery statistics over time.
 
-In this assignment I implemented a robotic warehouse simulation in Python. The program models a warehouse as a grid-based environment containing floor cells, shelf cells, and four corner home positions. Robots begin at the corners, select the nearest available good, move toward that shelf while avoiding obstacles, collect one item at a time, and return the item to their home corner.
+The final implementation is organised into small modules. `warehouse.py` is the program entry point. The `warehouse_app` package contains configuration handling, object models, terrain generation and loading, simulation control, constants, and visualisation. The `data` directory contains reproducible CSV input files for three showcase scenarios. The `tests` directory contains functional tests for the major assignment features.
 
-The final program supports both interactive and batch execution. In interactive mode, the user enters the warehouse size and simulation parameters through prompts. In batch mode, the program reads a terrain file and a parameter file so that multiple scenarios can be reproduced easily. During execution the program displays the warehouse state and a live statistics graph using Matplotlib subplots, and at the end it prints a summary of system performance.
+## User Guide
 
-I organised the code into small, focused modules to make the program easier to understand, test, and explain:
+### Requirements
 
-1. `warehouse.py` is the entry point.
-2. `warehouse_app/models.py` contains the `Robot` and `Good` classes.
-3. `warehouse_app/terrain.py` handles map generation, map loading, and good placement.
-4. `warehouse_app/config.py` handles command-line arguments and configuration input.
-5. `warehouse_app/simulation.py` contains the robot workflow and summary logic.
-6. `warehouse_app/visualisation.py` handles plotting.
+The program requires Python 3 and Matplotlib. Matplotlib is permitted under the assignment FAQ because other packages may be used to improve or extend the simulation, provided object-orientation remains central to the warehouse-level behaviour. This project uses Matplotlib only for plotting; robot and good behaviour is still implemented through Python classes.
 
-This structure directly matches the assignment requirements and made the final implementation easier to discuss in terms of objects, terrain, workflow, user interface, and statistics.
-
----
-
-## 2. User Guide
-
-### 2.1 Requirements
-
-The program requires:
-
-1. Python 3
-2. Matplotlib
-
-If Matplotlib is not installed, it can be installed with:
+Install Matplotlib if required:
 
 ```bash
 python3 -m pip install matplotlib
 ```
 
-### 2.2 Directory Structure
+### Interactive Mode
 
-The final submission is organised as follows:
-
-```text
-.
-├── warehouse.py
-├── warehouse_app/
-│   ├── config.py
-│   ├── constants.py
-│   ├── models.py
-│   ├── simulation.py
-│   ├── terrain.py
-│   └── visualisation.py
-├── data/
-│   ├── map1.csv
-│   ├── map2.csv
-│   ├── map3.csv
-│   ├── params1.csv
-│   ├── params2.csv
-│   └── params3.csv
-└── README.md
-```
-
-### 2.3 Interactive Mode
-
-To run the simulation in interactive mode:
+Run interactive mode with:
 
 ```bash
 python3 warehouse.py -i
 ```
 
-The program asks the user to enter:
+Interactive mode asks for warehouse width, warehouse height, number of robots, number of goods, simulation length, aisle gap between shelf columns, random seed, and display pause. It then generates a structured shelf-and-aisle warehouse and starts the simulation.
 
-1. warehouse width
-2. warehouse height
-3. number of robots
-4. number of goods
-5. simulation length in ticks
-6. aisle gap between shelf columns
-7. random seed
-8. display pause in milliseconds
+### Batch Mode
 
-### 2.4 Batch Mode
-
-To run the program in batch mode:
+Run batch mode with a map file and parameter file:
 
 ```bash
 python3 warehouse.py -f data/map1.csv -p data/params1.csv
 ```
 
-Two additional prepared showcase scenarios are included:
+Additional prepared scenarios are:
 
 ```bash
 python3 warehouse.py -f data/map2.csv -p data/params2.csv
 python3 warehouse.py -f data/map3.csv -p data/params3.csv
 ```
 
-### 2.5 Batch File Format
+Batch mode is useful for repeatable testing and for report scenarios because the same inputs and seeds can be reused.
 
-#### Map file
+### Batch Files
 
-The map file is a CSV grid. Supported values are:
+Map files are CSV grids. Shelf cells may be written as `shelf`, `s`, `1`, or `#`. Corner cells may be written as `corner` or `c`. Other tokens are treated as floor cells.
 
-1. `shelf`, `s`, `1`, `#` for shelf cells
-2. `corner`, `c` for corner cells
-3. any other value for floor cells
+Parameter files use `key,value` rows. Supported keys are `robots`, `goods`, `ticks`, `seed`, and `pause`.
 
-#### Parameter file
+### Testing
 
-The parameter file uses `key,value` rows. Supported keys are:
+Run all functional tests with:
 
-1. `robots`
-2. `goods`
-3. `ticks`
-4. `seed`
-5. `pause`
+```bash
+python3 -m unittest discover -s tests -v
+```
 
-### 2.6 Expected Behaviour
+Run a syntax check with:
 
-1. Robots spawn only at the four corners.
-2. Robots are allowed to overlap with each other.
-3. Robots cannot move through shelf cells.
-4. Multiple goods may exist at the same shelf location.
-5. Each robot attempts to target the nearest available unclaimed good.
+```bash
+python3 -m py_compile warehouse.py warehouse_app/*.py tests/*.py
+```
 
----
+If running without a graphical display, use the Agg backend:
 
-## 3. Traceability Matrix
+```bash
+MPLBACKEND=Agg python3 warehouse.py -f data/map1.csv -p data/params1.csv
+```
 
-| Feature | Code Reference(s) | Test Reference(s) | Test Result | Completion Date |
+### Submission FAQ Notes
+
+The assignment FAQ states that the report may be submitted as DOCX or PDF. This report is prepared in DOCX format using the provided `Project_Report_StudentID.docx` template. If converted to PDF, the same PDF should also be included in the zip file and submitted to Turnitin.
+
+The FAQ also states that additional packages may be used. This program uses Matplotlib for visualisation only. The warehouse-level behaviour remains object-oriented through the `Robot` and `Good` classes.
+
+## Traceability Matrix
+
+| Feature | Code Reference | Test Reference | Status | Date Completed |
 |---|---|---|---|---|
-| 1. Robots are represented as objects that know their position, home corner, state, and target good | `warehouse_app/models.py` lines 19-114, `warehouse_app/simulation.py` lines 10-19 | Scenario runs in batch and interactive mode; robot state changes observed in summaries and simulation behaviour | Pass | 2026-05-18 |
-| 2. Goods are represented with location and availability, and multiple goods may exist at one shelf | `warehouse_app/models.py` lines 8-16, `warehouse_app/terrain.py` lines 69-87 | Batch runs with repeated random shelf placement; direct logic checks confirmed multiple goods can be generated at the same shelf | Pass | 2026-05-18 |
-| 3. Task allocation and pickup-return workflow are implemented | `warehouse_app/simulation.py` lines 22-93 | Verified through scenario runs and by checking the robot state sequence `idle -> moving_to_good -> collecting -> returning -> idle` | Pass | 2026-05-18 |
-| 4. Warehouse terrain contains shelves and walkable aisles, and shelves block movement | `warehouse_app/terrain.py` lines 10-66, `warehouse_app/models.py` lines 60-114 | Reachability checks for all provided maps; scenario runs showed robots successfully navigating around shelves without crossing them | Pass | 2026-05-18 |
-| 5. The program provides interactive and batch modes | `warehouse_app/config.py` lines 24-123, `warehouse.py` lines 16-43 | `python3 warehouse.py -i`; `python3 warehouse.py -f data/map1.csv -p data/params1.csv` | Pass | 2026-05-18 |
-| 6. The program provides realtime visualisation using subplots | `warehouse_app/visualisation.py` lines 8-75, `warehouse_app/simulation.py` lines 121-148 | Verified during simulation execution using the warehouse map subplot and deliveries-over-time subplot | Pass | 2026-05-18 |
-| 7. The program provides realtime and summary statistics | `warehouse_app/visualisation.py` lines 67-75, `warehouse_app/simulation.py` lines 96-118 | Final summaries produced deliveries, remaining goods, throughput, and per-robot results for all showcase scenarios | Pass | 2026-05-18 |
+| 1.0 Robots are objects with position, home corner, state, and target good | `warehouse_app/models.py`, `Robot`, lines 19-191 | `tests/test_warehouse.py`, `test_robot_claims_and_delivers_one_good`; batch scenario runs | P | 21/05/2026 |
+| 1.1 Robot states are represented clearly | `warehouse_app/models.py`, lines 22-25 | `test_robot_claims_and_delivers_one_good`; final summaries show final states | P | 21/05/2026 |
+| 1.2 Robots spawn at the four corners | `warehouse_app/simulation.py`, `build_robots`, lines 10-19; `terrain.py`, `get_corner_positions`, lines 10-17 | `test_build_robots_cycles_through_four_corners` | P | 21/05/2026 |
+| 2.0 Goods store location, availability, and reservation state | `warehouse_app/models.py`, `Good`, lines 8-16 | `test_good_stores_location_and_availability` | P | 21/05/2026 |
+| 2.1 Multiple goods may exist at the same shelf location | `warehouse_app/terrain.py`, `generate_goods`, lines 81-87 | `test_goods_are_generated_only_on_shelves`; duplicate positions are allowed because goods are individual objects | P | 21/05/2026 |
+| 2.2 Robots select the nearest available unclaimed good | `warehouse_app/models.py`, `find_nearest_good`, lines 39-51 | `test_robot_selects_nearest_unclaimed_good` | P | 21/05/2026 |
+| 3.0 Pickup-return workflow is implemented | `warehouse_app/models.py`, `step_change`, lines 60-72; `_collect_good`, lines 100-120; `_return_home`, lines 122-129 | `test_robot_claims_and_delivers_one_good` | P | 21/05/2026 |
+| 3.1 Robot retargets if target becomes unavailable | `warehouse_app/models.py`, `_move_to_good`, lines 74-99 | `test_robot_retargets_when_target_is_taken` | P | 21/05/2026 |
+| 4.0 Warehouse terrain contains shelves and walkable aisles | `warehouse_app/terrain.py`, `generate_warehouse`, lines 20-32; `load_warehouse_from_csv`, lines 35-66 | `test_generated_warehouse_has_corner_homes_and_shelves`; `test_csv_loader_reads_shelves_and_corners` | P | 21/05/2026 |
+| 4.1 Robots cannot move through shelves | `warehouse_app/models.py`, `_is_walkable`, lines 137-145; `step_toward`, lines 147-191 | `test_robot_does_not_enter_shelf_cell` | P | 21/05/2026 |
+| 5.0 Interactive mode is supported | `warehouse_app/config.py`, `build_config_interactive`, lines 44-65; `warehouse.py`, lines 23-27 | Manual run: `python3 warehouse.py -i` | P | 21/05/2026 |
+| 5.1 Batch mode is supported | `warehouse_app/config.py`, `build_config_batch`, lines 68-88; `validate_args`, lines 117-123 | `test_batch_config_reads_map_and_parameters`; `test_cli_batch_run_prints_summary` | P | 21/05/2026 |
+| 6.0 Simulation updates each timestep using object methods | `warehouse_app/models.py`, `step_change`, lines 60-72; `simulation.py`, `process_robot_tick`, lines 22-24 | `test_robot_claims_and_delivers_one_good`; batch scenario runs | P | 21/05/2026 |
+| 7.0 Realtime display and statistics are provided with subplots | `warehouse_app/visualisation.py`, `draw_scene`, lines 8-75; `simulation.py`, `run_simulation`, lines 52-79 | Manual visual run; batch runs using Agg backend for summary verification | P | 21/05/2026 |
+| 7.1 Final summary statistics are printed | `warehouse_app/simulation.py`, `print_summary`, lines 32-49 | `test_cli_batch_run_prints_summary` | P | 21/05/2026 |
 
----
+## Discussion
 
-## 4. Discussion
+### Object Model
 
-### 4.1 Design Approach
+The simulation uses two main domain classes: `Good` and `Robot`. A `Good` stores its shelf coordinates, whether it is still available, and which robot has claimed it. A `Robot` stores its ID, home corner, current position, current state, target good, carrying flag, and delivery count. This matches the assignment requirement that robots should know their position, home corner, state, and target.
 
-My main goal was to produce a simulation that was correct, flexible, and easy to explain. The specification required object-oriented design, a warehouse terrain, task allocation, two user modes, and visual output. To satisfy this cleanly, I separated the solution into modules based on responsibility.
+The robot has four states: `idle`, `moving_to_good`, `collecting`, and `returning`. These states make the workflow explicit and easy to explain. The normal cycle is: idle robot selects a target, moves toward the target, collects the good, returns home, records the delivery, and becomes idle again.
 
-This decision improved the clarity of the program:
+### Goods and Targeting
 
-1. object definitions are separate from workflow logic
-2. terrain generation is separate from input handling
-3. visualisation code is separate from simulation state updates
-4. the main entry point remains short and easy to follow
+Goods are created as separate objects. This means multiple goods can exist at the same shelf coordinate because each item is still a separate `Good` instance. Availability is tracked with the `available` attribute. Reservation is tracked with the `claimed_by` attribute. A robot only chooses goods where `available` is true and `claimed_by` is `None`.
 
-This structure is useful in the demonstration because I can explain the system one layer at a time instead of moving through one large file.
+The nearest-target decision uses Euclidean distance through `math.hypot()`. This is simple and consistent. When a robot chooses a good, it claims the good immediately. This reduces duplicate targeting by different robots. If a target becomes unavailable before pickup, the robot releases the old target, returns to the idle logic, and selects another available good.
 
-### 4.2 Object Model
+### Timestep Simulation Logic
 
-The simulation uses two main classes:
+The v2 assignment brief says that each timestep should move robots, collect goods, return goods, or retarget depending on state, and that this behaviour should be driven by methods such as `step_change()`. To match that wording, the `Robot` class includes a `step_change(goods, grid)` method. The simulation loop calls this method once per robot per tick through `process_robot_tick()`.
 
-1. `Good`
-2. `Robot`
+This design keeps the robot behaviour inside the robot object. The simulation loop remains responsible for ordering updates, collecting statistics, and drawing the scene. This separation makes the code easier to explain because object behaviour and global simulation control are not mixed together.
 
-The `Good` class stores:
+### Warehouse Terrain
 
-1. the shelf coordinates
-2. whether the item is still available
-3. which robot, if any, has reserved it
+The warehouse is a 2D list of terrain strings. The possible terrain values are floor, shelf, and corner. Shelves are blocked cells. Corners and floor cells are walkable. Interactive mode generates structured shelf columns with aisle gaps. Batch mode loads terrain from CSV files.
 
-The `Robot` class stores:
+Robots are spawned only at the four corner positions. If there are more than four robots, the code cycles through the four corners. This follows the assignment rule that robots are initialised only at the four corners, while still allowing the number of robots to vary.
 
-1. robot ID
-2. home corner coordinates
-3. current position
-4. current state
-5. current target good
-6. whether it is carrying an item
-7. completed delivery count
+### Movement Logic
 
-This object model directly reflects the assignment brief. I chose simple attributes rather than a more complex hierarchy because the assignment mainly rewards clarity and correct behaviour.
+The movement algorithm is a simple greedy approach. Each tick, a robot considers neighbouring cells and moves to a walkable cell that reduces the straight-line distance to the target. It never moves into a shelf cell because `_is_walkable()` rejects shelf coordinates.
 
-### 4.3 Warehouse Terrain
+This approach is suitable for the structured aisle maps used in the showcase, but it is not a full pathfinding algorithm. A more advanced solution would use breadth-first search or A* to guarantee a path in more complex maps. I kept greedy movement because it is short, understandable, and appropriate for the designed input maps. This limitation is discussed again in Future Work.
 
-The warehouse is represented as a 2D list. Each cell is marked as:
+### User Interface and Configuration
 
-1. `floor`
-2. `shelf`
-3. `corner`
+The program has the two required modes. Interactive mode prompts for parameters and generates a warehouse. Batch mode uses `-f` and `-p` to load a map and parameter file. The command-line validation prevents invalid mode combinations, such as using `-i` with batch files or running batch mode without both required files.
 
-This representation works well for both map generation and file input. It is also easy to convert into a plotted form for Matplotlib.
+### Visualisation and Statistics
 
-Two terrain approaches are supported:
+The Matplotlib display uses two subplots. The first subplot shows the warehouse map, shelf cells, corner cells, available goods, and robot positions. The second subplot shows total deliveries over time. At the end of the simulation, the program prints ticks elapsed, total deliveries, remaining goods, throughput, and per-robot delivery counts and final states.
 
-1. procedural generation in interactive mode
-2. CSV loading in batch mode
+### UML Class Diagram
 
-For the procedural generator, I used vertical shelf columns separated by aisle gaps. The shelves are placed only in the internal rows so that robots can move around the ends of the columns. This creates structured warehouse aisles while keeping the terrain logic simple.
-
-For the batch maps in the `data/` directory, I used accessible layouts so that every shelf location can be reached from the walkable area. This was an important design correction because unreachable shelf cells reduce the validity of a showcase scenario.
-
-### 4.4 Targeting and Reservation
-
-When a robot is idle, it searches the full goods list to find the nearest available unclaimed good. I used Euclidean distance through `math.hypot()` because it gives a simple and consistent nearest-target calculation.
-
-Once a target is selected, the robot reserves it by setting the good's `claimed_by` field. This prevents another robot from choosing the same item at the same time. If the target is no longer valid before pickup, the robot resets and searches again.
-
-I chose this reservation-based approach because it satisfies three assignment needs at the same time:
-
-1. nearest-target selection
-2. support for multiple robots
-3. correct handling when a target becomes unavailable
-
-### 4.5 Robot Workflow
-
-The central behaviour of the system is the robot state machine in `warehouse_app/simulation.py`. Each robot is always in one of four states:
-
-1. `idle`
-2. `moving_to_good`
-3. `collecting`
-4. `returning`
-
-The workflow is:
-
-1. An idle robot searches for the nearest available good.
-2. It moves one step at a time toward that good.
-3. Once it reaches a valid adjacent pickup position, it collects the item.
-4. It then returns to its original home corner.
-5. When it arrives home, the delivery counter increases and the robot becomes idle again.
-
-This design is easy to test and easy to explain because each state has a clear responsibility.
-
-### 4.6 Movement Logic
-
-Robot movement is handled by `step_toward()`. Each tick, the robot attempts to reduce the x or y distance to its target. If the preferred direct move is blocked by a shelf, the robot considers neighboring walkable cells and chooses the move that still improves the remaining distance.
-
-This is a greedy movement strategy rather than a full pathfinding algorithm such as BFS or A*. I selected it because it is sufficient for the structured aisle layouts used in this assignment and keeps the code short enough to defend clearly in a unit demonstration.
-
-The main tradeoff is that this movement strategy is simpler than a general path planner. However, for the supplied scenarios it performs well and demonstrates the required fundamentals of simulation and object-oriented programming.
-
-### 4.7 User Interface and Configuration
-
-The program supports both required execution modes:
-
-1. interactive mode with prompts
-2. batch mode with file input
-
-Interactive mode is useful for quick experimentation because the user can change warehouse size, robot count, goods count, simulation time, aisle spacing, and seed directly from the terminal.
-
-Batch mode is useful for reproducible testing and for the report showcase because the same scenario can be run again using the same files and command.
-
-### 4.8 Visualisation and Statistics
-
-The program produces two subplots:
-
-1. a warehouse map
-2. a line graph of total deliveries over time
-
-The warehouse map shows:
-
-1. shelves
-2. available goods
-3. robot positions
-4. robot ID labels
-
-The statistics subplot provides a live view of cumulative deliveries. At the end of the simulation, the program also prints summary statistics:
-
-1. ticks elapsed
-2. total deliveries
-3. remaining goods
-4. throughput
-5. per-robot deliveries and final states
-
-This combination satisfies the assignment requirement for both realtime and summary statistics.
-
-### 4.9 UML Class Diagram
-
-```mermaid
-classDiagram
-    class Good {
-        +int x
-        +int y
-        +bool available
-        +int|None claimed_by
-    }
-
-    class Robot {
-        +int robot_id
-        +int home_x
-        +int home_y
-        +int x
-        +int y
-        +str state
-        +Good|None target_good
-        +bool carrying
-        +int deliveries
-        +find_nearest_good(goods)
-        +claim_good(good)
-        +step_toward(target_x, target_y, grid)
-    }
-
-    Robot --> Good : targets
+```text
++------------------+            targets / claims            +------------------+
+|      Robot       | --------------------------------------> |       Good       |
++------------------+                                         +------------------+
+| robot_id         |                                         | x                |
+| home_x, home_y   |                                         | y                |
+| x, y             |                                         | available        |
+| state            |                                         | claimed_by       |
+| target_good      |                                         +------------------+
+| carrying         |
+| deliveries       |
++------------------+
+| find_nearest_good|
+| claim_good       |
+| step_change      |
+| step_toward      |
++------------------+
 ```
 
----
+The `Robot` class depends on `Good` because each robot may target one good. The terrain is not a class in this version; it is represented by a 2D list handled by terrain utility functions.
 
-## 5. Showcase
+## Showcase
 
-### 5.1 Introduction
+### Introduction
 
-To demonstrate the system properly, I prepared three batch-mode scenarios in the `data/` directory. I chose these scenarios to show how changes in warehouse size, robot count, goods count, and simulation length affect system performance.
+The showcase uses three batch-mode scenarios. They vary warehouse size, shelf layout, number of robots, number of goods, and simulation length. All scenarios are reproducible because the map files, parameter files, and random seeds are fixed.
 
-The scenarios were designed to answer three questions:
+The scenarios are designed to compare how workload and layout affect completion and throughput:
 
-1. Can the system fully clear a small workload?
-2. What happens when the workload grows faster than the time budget?
-3. How does the system perform in a larger warehouse with enough time and capacity?
+1. Scenario 1 checks a small warehouse with a moderate workload.
+2. Scenario 2 checks a larger workload where some goods remain after the time limit.
+3. Scenario 3 checks a larger warehouse and workload with enough time for full completion.
 
-All showcase runs are reproducible because the commands, input files, and random seeds are fixed.
-
-### 5.2 Scenario 1: Small Accessible Warehouse
+### Scenario 1
 
 Command:
 
@@ -332,23 +188,24 @@ python3 warehouse.py -f data/map1.csv -p data/params1.csv
 
 Configuration:
 
-1. map size: 10 x 8
-2. robots: 4
-3. goods: 20
-4. ticks: 150
-5. seed: 123
+- Map size: 10 x 8
+- Robots: 4
+- Goods: 20
+- Ticks: 150
+- Seed: 123
 
-Output summary:
+Observed summary:
 
-1. total deliveries: 20
-2. remaining goods: 0
-3. throughput: 0.133 deliveries/tick
+```text
+Ticks elapsed: 150
+Total deliveries: 20
+Remaining goods: 0
+Throughput (deliveries/tick): 0.133
+```
 
-Discussion:
+Scenario 1 clears all goods. This confirms that the basic workflow is working: robots can find goods, move beside shelves, collect items, return home, and repeat until all goods are delivered.
 
-This scenario demonstrates the expected baseline behaviour of the system. The warehouse is small, the shelf layout is fully reachable, and the number of robots is well matched to the number of goods. All goods were collected and returned within the simulation time, which shows that the full target-pickup-return cycle works correctly in a straightforward case.
-
-### 5.3 Scenario 2: Medium Warehouse with Higher Load
+### Scenario 2
 
 Command:
 
@@ -358,23 +215,24 @@ python3 warehouse.py -f data/map2.csv -p data/params2.csv
 
 Configuration:
 
-1. map size: 12 x 9
-2. robots: 6
-3. goods: 40
-4. ticks: 220
-5. seed: 456
+- Map size: 12 x 9
+- Robots: 6
+- Goods: 40
+- Ticks: 220
+- Seed: 456
 
-Output summary:
+Observed summary:
 
-1. total deliveries: 36
-2. remaining goods: 4
-3. throughput: 0.164 deliveries/tick
+```text
+Ticks elapsed: 220
+Total deliveries: 36
+Remaining goods: 4
+Throughput (deliveries/tick): 0.164
+```
 
-Discussion:
+Scenario 2 leaves four goods undelivered. This is useful for comparison because it shows that changing workload and time limit changes the outcome. The simulation does not automatically guarantee completion; it depends on the selected parameters.
 
-In this scenario the program still performs strongly, but the run ends before every good is delivered. This is not caused by unreachable shelves, because all shelf cells in the map are accessible. Instead, it shows the effect of higher workload and limited simulation time. This makes the scenario useful for comparison because it demonstrates that the system performance depends not only on the robot logic but also on the selected parameters.
-
-### 5.4 Scenario 3: Large Warehouse with Full Completion
+### Scenario 3
 
 Command:
 
@@ -384,72 +242,52 @@ python3 warehouse.py -f data/map3.csv -p data/params3.csv
 
 Configuration:
 
-1. map size: 14 x 10
-2. robots: 6
-3. goods: 60
-4. ticks: 250
-5. seed: 321
+- Map size: 14 x 10
+- Robots: 6
+- Goods: 60
+- Ticks: 250
+- Seed: 321
 
-Output summary:
+Observed summary:
 
-1. total deliveries: 60
-2. remaining goods: 0
-3. throughput: 0.240 deliveries/tick
+```text
+Ticks elapsed: 250
+Total deliveries: 60
+Remaining goods: 0
+Throughput (deliveries/tick): 0.240
+```
 
-Discussion:
+Scenario 3 completes all deliveries and has the highest throughput. This demonstrates that the relationship between map size, robot count, goods count, and time limit is not linear. The wider aisle layout and available time allow the robots to process more goods overall.
 
-This scenario produced the best overall throughput. The larger warehouse still maintains a clean aisle structure, and the available time is enough for all goods to be collected. Compared with Scenario 1, the system processes more work overall. Compared with Scenario 2, the system benefits from a better balance between map size, workload, and time budget.
+### Showcase Comparison
 
-### 5.5 Showcase Comparison
+Scenario 1 proves the baseline functionality. Scenario 2 shows that a larger workload can exceed the available simulation time. Scenario 3 shows that a larger scenario can still complete successfully when the parameters are balanced. Together, the three scenarios demonstrate that the simulation responds meaningfully to input changes.
 
-The three scenarios show that the simulation responds meaningfully to changing parameters.
+## Conclusion
 
-Scenario 1 shows that the implementation can fully clear a moderate workload in a compact warehouse.
+The final program provides a complete implementation of the main robotic warehouse requirements. It uses object-oriented design for robots and goods, supports multiple goods at shelf locations, implements task progression through robot states, blocks movement through shelves, provides both interactive and batch run modes, and displays realtime and summary statistics.
 
-Scenario 2 shows that when workload increases and time is limited, some goods remain undelivered even though the warehouse layout is fully reachable.
+The v2 specification emphasises timestep behaviour driven by object methods. This is addressed through `Robot.step_change()`, which updates the robot according to its current state on each simulation tick. The functional test suite also improves confidence that the main behaviours work as intended.
 
-Scenario 3 shows that with a larger warehouse and enough simulation time, the same robot logic can achieve both full completion and higher throughput.
+The main limitation is the greedy movement algorithm. It is appropriate for the structured showcase maps, but it is not a general pathfinding solution for all possible warehouse layouts.
 
-This comparison demonstrates the key assignment idea that changes in parameters and terrain affect the behaviour of the warehouse system.
+## Future Work
 
----
+Future improvements could include:
 
-## 6. Conclusion
+1. Replace greedy movement with BFS or A* pathfinding.
+2. Add saved output files for plots and summary statistics.
+3. Add parameter sweep automation for larger experiments.
+4. Add more task allocation strategies, such as assigning goods based on robot workload.
+5. Add stronger validation for unreachable shelf locations.
+6. Add optional collision avoidance if robot overlap is disallowed in a future version.
 
-This assignment required a working warehouse simulation with object-oriented design, terrain constraints, targeting behaviour, two run modes, visual output, and statistics. My final program satisfies these requirements and presents the solution in a structured and explainable way.
+## References
 
-The strongest parts of the implementation are:
+Curtin University. 2026. "COMP5005 Assignment Robotic Warehouse Semester 1, 2026 v1.0." Assignment brief, Discipline of AI and Data Science, Curtin University.
 
-1. clear object modelling of robots and goods
-2. a simple but effective state machine for robot behaviour
-3. support for both generated and file-based terrain
-4. reproducible showcase scenarios
-5. separation of code into logical modules
+Curtin University. 2026. "COMP1005/5005 Assignment FAQ." Blackboard FAQ notes for Fundamentals of Programming.
 
-The most important lesson from the project was that correctness alone is not enough; the quality of the terrain and the organisation of the code also affect how clearly the system can be demonstrated and discussed.
+Matplotlib Development Team. 2026. "Matplotlib Documentation." Accessed May 21, 2026. https://matplotlib.org/stable/contents.html.
 
-Overall, I believe the final version is a solid and complete implementation of the robotic warehouse specification.
-
----
-
-## 7. Future Work
-
-Several extensions could be explored in future versions:
-
-1. replace greedy movement with full pathfinding such as BFS or A*
-2. add automatic parameter sweep experiments across many scenarios
-3. save plots and summary results directly to files
-4. add more advanced task allocation strategies, such as balancing robot workload
-5. include collision avoidance if robot overlap is no longer allowed
-6. add unit tests for the key simulation functions
-
-These changes would improve the sophistication of the simulation, but they were not necessary to meet the required assignment scope.
-
----
-
-## 8. References
-
-1. Curtin University, *COMP5005 Fundamentals of Programming Semester 1, 2026 Assignment: Robotic Warehouse*.
-2. Python Software Foundation, *Python 3 Documentation*.
-3. Matplotlib Development Team, *Matplotlib Documentation*.
-
+Python Software Foundation. 2026. "Python 3 Documentation." Accessed May 21, 2026. https://docs.python.org/3/.

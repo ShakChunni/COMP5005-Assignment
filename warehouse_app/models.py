@@ -57,6 +57,83 @@ class Robot:
             self.target_good = good
             self.state = Robot.MOVING_TO_GOOD
 
+    def step_change(self, goods, grid):
+        """Advance this robot by one simulation timestep."""
+        if self.state == Robot.IDLE:
+            self.claim_good(self.find_nearest_good(goods))
+
+        elif self.state == Robot.MOVING_TO_GOOD:
+            self._move_to_good(goods, grid)
+
+        elif self.state == Robot.COLLECTING:
+            self._collect_good()
+
+        elif self.state == Robot.RETURNING:
+            self._return_home(grid)
+
+    def _move_to_good(self, goods, grid):
+        """Move toward the target good or retarget if it is unavailable."""
+        target = self.target_good
+        if target is None:
+            self.state = Robot.IDLE
+            return
+
+        target_taken = (
+            not target.available
+            or (
+                target.claimed_by is not None
+                and target.claimed_by != self.robot_id
+            )
+        )
+
+        if target_taken:
+            if target.claimed_by == self.robot_id:
+                target.claimed_by = None
+            self.target_good = None
+            self.state = Robot.IDLE
+            self.claim_good(self.find_nearest_good(goods))
+        else:
+            self.step_toward(target.x, target.y, grid)
+            if self._is_next_to_target(target):
+                self.state = Robot.COLLECTING
+
+    def _collect_good(self):
+        """Collect the target good if the robot is beside it."""
+        target = self.target_good
+        can_collect = (
+            target is not None
+            and target.available
+            and target.claimed_by == self.robot_id
+            and self._is_next_to_target(target)
+        )
+
+        if can_collect:
+            target.available = False
+            target.claimed_by = None
+            self.target_good = None
+            self.carrying = True
+            self.state = Robot.RETURNING
+        else:
+            if target is not None and target.claimed_by == self.robot_id:
+                target.claimed_by = None
+            self.target_good = None
+            self.state = Robot.IDLE
+
+    def _return_home(self, grid):
+        """Move home and complete a delivery when the robot arrives."""
+        self.step_toward(self.home_x, self.home_y, grid)
+        if self.x == self.home_x and self.y == self.home_y:
+            if self.carrying:
+                self.deliveries += 1
+            self.carrying = False
+            self.state = Robot.IDLE
+
+    def _is_next_to_target(self, target):
+        """Return True when the robot can pick from a shelf cell."""
+        dx = abs(self.x - target.x)
+        dy = abs(self.y - target.y)
+        return (dx + dy) <= 1
+
     def _is_walkable(self, x, y, grid):
         """Return True if a coordinate is inside the grid and not a shelf."""
         height = len(grid)

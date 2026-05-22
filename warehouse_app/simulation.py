@@ -19,78 +19,9 @@ def build_robots(robot_count, width, height):
     return robots
 
 
-def try_assign_target(robot, goods):
-    """Assign the nearest available good to a robot if possible."""
-    nearest = robot.find_nearest_good(goods)
-    if nearest is not None:
-        robot.claim_good(nearest)
-
-
 def process_robot_tick(robot, goods, grid):
     """Advance one robot by one simulation tick."""
-    if robot.state == Robot.IDLE:
-        try_assign_target(robot, goods)
-
-    elif robot.state == Robot.MOVING_TO_GOOD:
-        target = robot.target_good
-        if target is None:
-            robot.state = Robot.IDLE
-        else:
-            target_taken = (
-                not target.available
-                or (
-                    target.claimed_by is not None
-                    and target.claimed_by != robot.robot_id
-                )
-            )
-
-            if target_taken:
-                if target.claimed_by == robot.robot_id:
-                    target.claimed_by = None
-                robot.target_good = None
-                robot.state = Robot.IDLE
-                try_assign_target(robot, goods)
-            else:
-                robot.step_toward(target.x, target.y, grid)
-                dx = abs(robot.x - target.x)
-                dy = abs(robot.y - target.y)
-                if (dx + dy) <= 1:
-                    robot.state = Robot.COLLECTING
-
-    elif robot.state == Robot.COLLECTING:
-        target = robot.target_good
-        dx = 0
-        dy = 0
-        if target is not None:
-            dx = abs(robot.x - target.x)
-            dy = abs(robot.y - target.y)
-
-        can_collect = (
-            target is not None
-            and target.available
-            and target.claimed_by == robot.robot_id
-            and (dx + dy) <= 1
-        )
-
-        if can_collect:
-            target.available = False
-            target.claimed_by = None
-            robot.target_good = None
-            robot.carrying = True
-            robot.state = Robot.RETURNING
-        else:
-            if target is not None and target.claimed_by == robot.robot_id:
-                target.claimed_by = None
-            robot.target_good = None
-            robot.state = Robot.IDLE
-
-    elif robot.state == Robot.RETURNING:
-        robot.step_toward(robot.home_x, robot.home_y, grid)
-        if robot.x == robot.home_x and robot.y == robot.home_y:
-            if robot.carrying:
-                robot.deliveries += 1
-            robot.carrying = False
-            robot.state = Robot.IDLE
+    robot.step_change(goods, grid)
 
 
 def count_available_goods(goods):

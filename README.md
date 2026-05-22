@@ -1,42 +1,29 @@
-# COMP5005 Robotic Warehouse Simulation
+Fundamentals of Programming COMP1005/5005
 
-## Project Structure
+## Description of warehouse.py
+This directory contains the COMP5005 Robotic Warehouse assignment. The program simulates autonomous warehouse robots collecting goods from shelf locations and returning them to their home corners in a grid-based warehouse.
 
-```text
-.
-├── warehouse.py
-├── warehouse_app/
-│   ├── __init__.py
-│   ├── config.py
-│   ├── constants.py
-│   ├── models.py
-│   ├── simulation.py
-│   ├── terrain.py
-│   └── visualisation.py
-├── data/
-│   ├── map1.csv
-│   ├── map2.csv
-│   ├── map3.csv
-│   ├── params1.csv
-│   ├── params2.csv
-│   └── params3.csv
-├── REPORT_TEXT.md
-└── FOP 2026 Sem 1 Assignment.pdf
-```
+The implementation includes:
+- `warehouse.py`, the main program entry point.
+- `warehouse_app/`, the package containing configuration, terrain, model, simulation, and visualisation code.
+- `data/`, sample CSV maps and parameter files for batch-mode scenarios.
+- `tests/`, functional tests for the main assignment requirements.
 
-## Requirements
+Robots are represented as objects with their own position, home corner, state, target good, carrying status, and delivery count. Goods are represented as objects with shelf coordinates, availability, and reservation state. Shelves are blocked terrain cells, while floor and corner cells are walkable.
 
+# Dependencies
 - Python 3
-- `matplotlib`
+- matplotlib
 
-Install the dependency if needed:
+Install matplotlib if it is not already available:
 
 ```bash
 python3 -m pip install matplotlib
 ```
 
-## Run Modes
+The tests use Python's built-in `unittest` module and do not require pytest.
 
+## How to Run
 Interactive mode:
 
 ```bash
@@ -56,23 +43,34 @@ python3 warehouse.py -f data/map2.csv -p data/params2.csv
 python3 warehouse.py -f data/map3.csv -p data/params3.csv
 ```
 
-## Batch File Formats
+If running in a terminal without a graphical display, use:
 
-Map files:
+```bash
+MPLBACKEND=Agg python3 warehouse.py -f data/map1.csv -p data/params1.csv
+```
 
-- 2D CSV grid
-- supported shelf tokens: `shelf`, `s`, `1`, `#`
-- supported corner tokens: `corner`, `c`
-- anything else is treated as floor
+## How to Test
+Run all functional tests:
 
-Parameter files:
+```bash
+python3 -m unittest discover -s tests -v
+```
 
-- `key,value` rows
-- supported keys: `robots`, `goods`, `ticks`, `seed`, `pause`
+Run a syntax check:
 
-## Notes
+```bash
+python3 -m py_compile warehouse.py warehouse_app/*.py tests/*.py
+```
 
-- Robots spawn only at map corners.
-- Robots cannot move through shelf cells.
-- Multiple goods can exist at the same shelf location.
-- The sample data in `data/` is structured to keep shelf locations reachable.
+## Batch File Format
+Map files are 2D CSV grids. Supported shelf tokens are `shelf`, `s`, `1`, and `#`. Supported corner tokens are `corner` and `c`. Any other value is treated as floor.
+
+Parameter files use `key,value` rows. Supported keys are `robots`, `goods`, `ticks`, `seed`, and `pause`.
+
+## FAQ Notes
+Reports may be submitted as either DOCX or PDF. This project includes a Word report template file for the final report.
+
+The assignment FAQ allows other packages. This implementation uses matplotlib for plotting while keeping the warehouse-level behaviour object-oriented through the `Robot` and `Good` classes.
+
+## Version Information
+21st May, 2026 - Updated version for COMP5005 Robotic Warehouse assignment using the v2 assignment brief, functional tests, and revised report structure.
